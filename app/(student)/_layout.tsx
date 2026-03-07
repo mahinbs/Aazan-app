@@ -49,7 +49,7 @@ export default function StudentLayout() {
             <Tabs.Screen
                 name="ai-chat"
                 options={{
-                    title: 'AAZA AI',
+                    title: 'Aazaan AI',
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="chatbubble-ellipses" size={size} color={color} />
                     ),
@@ -57,6 +57,12 @@ export default function StudentLayout() {
             />
             <Tabs.Screen
                 name="forum"
+                options={{
+                    href: null,
+                }}
+            />
+            <Tabs.Screen
+                name="referral"
                 options={{
                     href: null,
                 }}

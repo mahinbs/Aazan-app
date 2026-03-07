@@ -8,27 +8,38 @@ import { AppCard } from '../../components/common/AppCard';
 import { AppText } from '../../components/common/AppText';
 import { Colors } from '../../constants/Colors';
 
-const MOCK_MESSAGES = [
-    { id: '1', text: 'Hello! I am Aazaan AI. How can I assist your learning today? I can read your text, listen to your voice, or scan images. Even if you have difficulty hearing, I can speak my responses aloud for you! 🎧', sender: 'ai' },
-    { id: '2', text: 'Can you help me solve this calculus integral?', sender: 'user' },
-    { id: '3', text: 'Of course! Please upload a photo or type the equation here. You can also tap the mic button to ask by voice.', sender: 'ai' },
+const QUICK_ACTIONS = [
+    { id: '1', label: 'Schedule Meet', icon: 'calendar' },
+    { id: '2', label: 'Change Webinar Time', icon: 'time' },
+    { id: '3', label: 'Explore Topics', icon: 'bulb' },
+    { id: '4', label: 'Clear Doubts', icon: 'help-circle' },
 ];
 
-export default function AIChat() {
+const MOCK_MESSAGES = [
+    { id: '1', text: 'Hello Professor! I am Aazaan AI — your teaching assistant. I can help you schedule meetings, manage webinars, explore teaching topics, and clear your doubts. How can I assist you today? 🎓', sender: 'ai' },
+    { id: '2', text: 'I need to reschedule my Quantum Physics webinar to next Friday.', sender: 'user' },
+    { id: '3', text: 'Sure! I\'ve noted the schedule change for your "Quantum Physics Masterclass" to next Friday. Would you like me to notify enrolled students about the time change? I can also suggest optimal time slots based on student availability.', sender: 'ai' },
+];
+
+export default function TeacherAIChat() {
     const [messages, setMessages] = useState(MOCK_MESSAGES);
     const [inputText, setInputText] = useState('');
     const [isRecording, setIsRecording] = useState(false);
     const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
     const router = useRouter();
 
-    const handleSend = () => {
-        if (!inputText.trim()) return;
-        const userMsg = { id: Date.now().toString(), text: inputText, sender: 'user' };
-        const aiResponse = {
-            id: (Date.now() + 1).toString(),
-            text: `Great question about "${inputText}". Let me help you understand this concept step by step. The key principle here involves understanding the fundamental relationships between the variables. Would you like me to explain further or show you a worked example?`,
-            sender: 'ai',
+    const handleSend = (text?: string) => {
+        const msgText = text || inputText;
+        if (!msgText.trim()) return;
+        const userMsg = { id: Date.now().toString(), text: msgText, sender: 'user' };
+        const responses: Record<string, string> = {
+            'Schedule Meet': 'I can help you schedule a new meeting. Please provide the following details:\n\n📅 Date & Time\n👥 Expected attendees\n📝 Meeting topic\n\nOr would you like me to suggest available slots?',
+            'Change Webinar Time': 'Which webinar would you like to reschedule?\n\n1. Quantum Physics Masterclass (Today, 6:00 PM)\n2. Calculus Advanced (Feb 26, 10:00 AM)\n\nSelect a webinar or describe the change.',
+            'Explore Topics': 'Here are trending topics in your subject areas:\n\n🔬 Physics: Quantum Computing Basics, String Theory Simplified\n📐 Mathematics: Applied Data Science, Game Theory\n\nWould you like me to help prepare materials for any of these?',
+            'Clear Doubts': 'Of course! I\'m here to help with any academic or platform-related questions. What would you like to know about?',
         };
+        const aiText = responses[msgText] || `I understand your request about "${msgText}". Let me help you with that. I can set up the necessary arrangements and notify relevant students. Would you like me to proceed?`;
+        const aiResponse = { id: (Date.now() + 1).toString(), text: aiText, sender: 'ai' };
         setMessages([...messages, userMsg, aiResponse]);
         setInputText('');
     };
@@ -37,7 +48,7 @@ export default function AIChat() {
         setIsRecording(!isRecording);
         if (!isRecording) {
             setTimeout(() => {
-                setInputText('What is the derivative of sin(x)?');
+                setInputText('Schedule a doubt clearing session for tomorrow');
                 setIsRecording(false);
             }, 2000);
         }
@@ -49,7 +60,6 @@ export default function AIChat() {
             return;
         }
         setSpeakingMessageId(msgId);
-        // Simulate speech duration
         setTimeout(() => setSpeakingMessageId(null), 3000);
     };
 
@@ -63,7 +73,7 @@ export default function AIChat() {
                         </TouchableOpacity>
                         <View style={styles.headerText}>
                             <AppText variant="h2" color="#FFFFFF">Aazaan AI</AppText>
-                            <AppText variant="caption" color="rgba(255,255,255,0.8)">24/7 Intelligent Tutor • Voice Enabled</AppText>
+                            <AppText variant="caption" color="rgba(255,255,255,0.8)">Teaching Assistant • Voice Enabled</AppText>
                         </View>
                         <TouchableOpacity style={styles.historyBtn}>
                             <Ionicons name="time-outline" size={24} color="#FFF" />
@@ -73,12 +83,19 @@ export default function AIChat() {
             </LinearGradient>
 
             <ScrollView contentContainerStyle={styles.chatContent} showsVerticalScrollIndicator={false}>
-                {/* Accessibility Banner */}
-                <View style={styles.accessBanner}>
-                    <Ionicons name="ear" size={16} color={Colors.secondary.teal} />
-                    <AppText variant="caption" style={styles.accessText}>
-                        Voice-enabled for accessibility — tap 🔊 to hear AI responses
-                    </AppText>
+                {/* Quick Actions */}
+                <View style={styles.quickActions}>
+                    {QUICK_ACTIONS.map((action) => (
+                        <TouchableOpacity
+                            key={action.id}
+                            style={styles.actionChip}
+                            onPress={() => handleSend(action.label)}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name={action.icon as any} size={14} color={Colors.secondary.teal} />
+                            <AppText variant="label" style={styles.actionLabel}>{action.label}</AppText>
+                        </TouchableOpacity>
+                    ))}
                 </View>
 
                 {messages.map((msg) => (
@@ -129,11 +146,8 @@ export default function AIChat() {
                         </View>
                     )}
                     <View style={styles.inputRow}>
-                        <TouchableOpacity style={styles.scanBtn}>
-                            <Ionicons name="scan" size={22} color={Colors.secondary.teal} />
-                        </TouchableOpacity>
                         <TextInput
-                            placeholder="Ask or scan a problem..."
+                            placeholder="Ask about scheduling, topics..."
                             style={styles.input}
                             value={inputText}
                             onChangeText={setInputText}
@@ -151,7 +165,7 @@ export default function AIChat() {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.sendBtn, !inputText.trim() && styles.sendBtnDisabled]}
-                            onPress={handleSend}
+                            onPress={() => handleSend()}
                             disabled={!inputText.trim()}
                         >
                             <LinearGradient colors={['#1FB5A9', '#169C91']} style={styles.sendGradient}>
@@ -202,20 +216,27 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    accessBanner: {
+    quickActions: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginBottom: 20,
+    },
+    actionChip: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: Colors.secondary.aquaLight,
-        paddingHorizontal: 15,
+        paddingHorizontal: 14,
         paddingVertical: 10,
-        borderRadius: 12,
-        marginBottom: 20,
-        gap: 8,
+        borderRadius: 20,
+        gap: 6,
+        borderWidth: 1,
+        borderColor: Colors.secondary.aqua,
     },
-    accessText: {
-        flex: 1,
-        color: Colors.text.secondary,
+    actionLabel: {
         fontSize: 11,
+        color: Colors.secondary.teal,
+        fontWeight: '600',
     },
     chatContent: {
         padding: 24,
@@ -285,12 +306,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         height: 54,
-    },
-    scanBtn: {
-        width: 44,
-        height: 44,
-        justifyContent: 'center',
-        alignItems: 'center',
+        paddingLeft: 15,
     },
     input: {
         flex: 1,

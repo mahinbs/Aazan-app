@@ -47,6 +47,15 @@ export default function TeacherLayout() {
                 }}
             />
             <Tabs.Screen
+                name="ai-chat"
+                options={{
+                    title: 'Aazaan AI',
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="chatbubble-ellipses" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
                 name="profile"
                 options={{
                     title: 'Profile',

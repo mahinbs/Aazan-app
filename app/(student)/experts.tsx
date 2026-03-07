@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../components/common/AppButton';
@@ -18,6 +18,24 @@ const EXPERTS_LIST = [
 
 export default function ExpertDirectory() {
     const router = useRouter();
+    const [searchText, setSearchText] = useState('');
+    const [isVoiceListening, setIsVoiceListening] = useState(false);
+
+    const handleVoiceSearch = () => {
+        setIsVoiceListening(!isVoiceListening);
+        if (!isVoiceListening) {
+            // Simulate voice-to-text after 2 seconds
+            setTimeout(() => {
+                setSearchText('Physics');
+                setIsVoiceListening(false);
+            }, 2000);
+        }
+    };
+
+    const filteredExperts = EXPERTS_LIST.filter((e) =>
+        e.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        e.subject.toLowerCase().includes(searchText.toLowerCase())
+    );
 
     const renderExpert = ({ item }: { item: typeof EXPERTS_LIST[0] }) => (
         <AppCard style={styles.card} variant="elevated">
@@ -68,20 +86,40 @@ export default function ExpertDirectory() {
                     </View>
 
                     <View style={styles.searchWrapper}>
-                        <View style={styles.searchBar}>
+                        <View style={[styles.searchBar, isVoiceListening && styles.searchBarActive]}>
                             <Ionicons name="search" size={20} color="rgba(255,255,255,0.6)" />
                             <TextInput
                                 placeholder="Filter by subject or keyword..."
                                 style={styles.searchInput}
                                 placeholderTextColor="rgba(255,255,255,0.5)"
+                                value={searchText}
+                                onChangeText={setSearchText}
                             />
+                            <TouchableOpacity
+                                style={[styles.micButton, isVoiceListening && styles.micButtonActive]}
+                                onPress={handleVoiceSearch}
+                            >
+                                <Ionicons
+                                    name={isVoiceListening ? 'radio-button-on' : 'mic'}
+                                    size={20}
+                                    color={isVoiceListening ? '#EF4444' : '#FFFFFF'}
+                                />
+                            </TouchableOpacity>
                         </View>
+                        {isVoiceListening && (
+                            <View style={styles.listeningBadge}>
+                                <View style={styles.listeningDot} />
+                                <AppText variant="label" color={Colors.accent.gold} style={{ fontSize: 10 }}>
+                                    LISTENING...
+                                </AppText>
+                            </View>
+                        )}
                     </View>
                 </SafeAreaView>
             </LinearGradient>
 
             <FlatList
-                data={EXPERTS_LIST}
+                data={filteredExperts}
                 renderItem={renderExpert}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContent}
@@ -133,11 +171,39 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.2)',
     },
+    searchBarActive: {
+        borderColor: Colors.accent.gold,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+    },
     searchInput: {
         flex: 1,
         marginLeft: 10,
         fontSize: 15,
         color: '#FFF',
+    },
+    micButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    micButtonActive: {
+        backgroundColor: 'rgba(239,68,68,0.2)',
+    },
+    listeningBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+        gap: 6,
+    },
+    listeningDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: Colors.accent.gold,
     },
     listContent: {
         padding: 24,

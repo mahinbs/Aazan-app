@@ -19,7 +19,7 @@ const ONBOARDING_DATA = [
     {
         id: '2',
         title: 'Master Your Studies\nwith Smart AI',
-        description: 'Our AAZA AI understands text, audio, and visual problems to provide instant, precise solutions.',
+        description: 'Our Aazaan AI understands text, audio, and visual problems to provide instant, precise solutions.',
         image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1000&auto=format&fit=crop',
     },
     {

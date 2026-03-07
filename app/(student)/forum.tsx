@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppCard } from '../../components/common/AppCard';
@@ -19,6 +19,7 @@ const POSTS = [
         answers: 5,
         time: '2h ago',
         teacherAnswered: true,
+        inputType: 'text',
     },
     {
         id: '2',
@@ -29,11 +30,33 @@ const POSTS = [
         answers: 3,
         time: '5h ago',
         teacherAnswered: false,
+        inputType: 'text',
     },
 ];
 
 export default function CollaborativeForum() {
     const router = useRouter();
+    const [questionText, setQuestionText] = useState('');
+    const [isRecording, setIsRecording] = useState(false);
+    const [showAIDetection, setShowAIDetection] = useState(false);
+
+    const handlePostQuestion = () => {
+        if (!questionText.trim()) return;
+        setShowAIDetection(true);
+        setTimeout(() => setShowAIDetection(false), 5000);
+        setQuestionText('');
+    };
+
+    const toggleRecording = () => {
+        setIsRecording(!isRecording);
+        if (!isRecording) {
+            // Simulate voice-to-text after 2 seconds
+            setTimeout(() => {
+                setQuestionText('What is the Heisenberg uncertainty principle?');
+                setIsRecording(false);
+            }, 2000);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -59,6 +82,9 @@ export default function CollaborativeForum() {
                             placeholder="What is your academic question?"
                             style={styles.input}
                             placeholderTextColor={Colors.text.muted}
+                            value={questionText}
+                            onChangeText={setQuestionText}
+                            multiline
                         />
                     </View>
                     <View style={styles.divider} />
@@ -71,11 +97,59 @@ export default function CollaborativeForum() {
                             <Ionicons name="attach" size={20} color={Colors.primary.blue} />
                             <AppText variant="label" style={{ marginLeft: 6, fontSize: 10 }}>PDF</AppText>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.askBtn}>
+                        <TouchableOpacity
+                            style={[styles.mediaBtn, isRecording && styles.recordingBtn]}
+                            onPress={toggleRecording}
+                        >
+                            <Ionicons
+                                name={isRecording ? 'radio-button-on' : 'mic'}
+                                size={20}
+                                color={isRecording ? '#EF4444' : Colors.primary.blue}
+                            />
+                            <AppText
+                                variant="label"
+                                style={{ marginLeft: 6, fontSize: 10 }}
+                                color={isRecording ? '#EF4444' : undefined}
+                            >
+                                {isRecording ? 'REC...' : 'VOICE'}
+                            </AppText>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.askBtn} onPress={handlePostQuestion}>
                             <AppText variant="label" color="#FFF" style={{ fontSize: 10 }}>POST QUESTION</AppText>
                         </TouchableOpacity>
                     </View>
                 </AppCard>
+
+                {/* AI Subject Detection Banner */}
+                {showAIDetection && (
+                    <AppCard style={styles.aiDetectionCard}>
+                        <LinearGradient
+                            colors={Colors.gradients.teal}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.aiDetectionGradient}
+                        >
+                            <View style={styles.aiDetectionContent}>
+                                <View style={styles.aiDetectionIcon}>
+                                    <Ionicons name="sparkles" size={18} color={Colors.secondary.teal} />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <AppText variant="label" color="#FFF" style={{ fontSize: 11 }}>
+                                        AAZAAN AI DETECTED
+                                    </AppText>
+                                    <AppText variant="body" color="#FFF" style={{ fontSize: 13, marginTop: 2 }}>
+                                        Subject: Physics • 3 experts recommended
+                                    </AppText>
+                                </View>
+                                <TouchableOpacity style={styles.viewExpertsBtn}>
+                                    <AppText variant="label" color={Colors.secondary.teal} style={{ fontSize: 10 }}>
+                                        VIEW
+                                    </AppText>
+                                </TouchableOpacity>
+                            </View>
+                        </LinearGradient>
+                    </AppCard>
+                )}
 
                 <View style={styles.filterRow}>
                     <TouchableOpacity style={[styles.filterChip, styles.activeChip]}>
@@ -159,7 +233,7 @@ const styles = StyleSheet.create({
     postInputCard: {
         borderRadius: 24,
         padding: 20,
-        marginBottom: 30,
+        marginBottom: 20,
     },
     inputRow: {
         flexDirection: 'row',
@@ -176,6 +250,7 @@ const styles = StyleSheet.create({
         marginLeft: 15,
         fontSize: 15,
         color: Colors.text.primary,
+        maxHeight: 80,
     },
     divider: {
         height: 1,
@@ -185,7 +260,8 @@ const styles = StyleSheet.create({
     inputFooter: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 15,
+        gap: 10,
+        flexWrap: 'wrap',
     },
     mediaBtn: {
         flexDirection: 'row',
@@ -195,12 +271,43 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         borderRadius: 10,
     },
+    recordingBtn: {
+        backgroundColor: '#FEE2E2',
+    },
     askBtn: {
         marginLeft: 'auto',
         backgroundColor: Colors.primary.blue,
         paddingHorizontal: 15,
         paddingVertical: 8,
         borderRadius: 10,
+    },
+    aiDetectionCard: {
+        padding: 0,
+        borderRadius: 20,
+        marginBottom: 20,
+        overflow: 'hidden',
+    },
+    aiDetectionGradient: {
+        padding: 16,
+    },
+    aiDetectionContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    aiDetectionIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        backgroundColor: '#FFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    viewExpertsBtn: {
+        backgroundColor: '#FFF',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
     },
     filterRow: {
         flexDirection: 'row',

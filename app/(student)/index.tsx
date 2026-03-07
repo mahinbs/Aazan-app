@@ -31,7 +31,7 @@ export default function StudentHome() {
                 <SafeAreaView edges={['top']}>
                     <View style={styles.header}>
                         <View style={styles.headerLeft}>
-                            <AppText variant="h2" color="#FFFFFF">AZZAAN</AppText>
+                            <AppText variant="h2" color="#FFFFFF">AAZAAN</AppText>
                             <AppText variant="caption" color="rgba(255,255,255,0.7)">Connect. Learn. Grow.</AppText>
                         </View>
                         <View style={styles.headerRight}>
